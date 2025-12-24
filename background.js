@@ -43,7 +43,7 @@ async function getAIResponse(text) {
           {
             parts: [
               {
-                text: `You are a helpful assistant that provides clear, concise explanations. When given a word or phrase, provide a brief definition or explanation. Keep responses under 100 words unless more detail is necessary.\n\nExplain or define: "${text}"`
+                text: `You are a helpful assistant that provides easy, clear explanations. When given a word or phrase, provide a brief definition or explanation. Keep responses under 100 words unless more detail is necessary.\n\nExplain or define: "${text}"`
               }
             ]
           }
