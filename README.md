@@ -91,21 +91,6 @@ This extension requires a Google Gemini API key to function.
 - **More**: Click "More »" to search the term on Google
 - **Click Outside**: Clicking outside the dialog closes it
 
-## 📁 Project Structure
-
-```
-aihelp-extension/
-├── manifest.json      # Extension configuration (Manifest V3)
-├── background.js      # Service worker - handles API calls
-├── content.js         # Injected script - manages UI and selection
-├── options.html       # Settings page HTML
-├── options.js         # Settings page logic
-├── icon16.png         # Extension icon (16x16)
-├── icon48.png         # Extension icon (48x48)
-├── icon128.png        # Extension icon (128x128)
-└── README.md          # This file
-```
-
 ## 🔧 Technical Details
 
 ### Permissions
