@@ -1,0 +1,38 @@
+{
+  "manifest_version": 3,
+  "name": "AI Text Lookup",
+  "version": "1.0.0",
+  "description": "Highlight text on any webpage to get AI-powered explanations",
+  "permissions": ["storage"],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_end"
+    }
+  ],
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
+  "commands": {
+    "trigger-ai-lookup": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+A",
+        "mac": "Command+Shift+A"
+      },
+      "description": "Trigger AI lookup on selected text"
+    }
+  },
+  "icons": {
+    "16": "assets/images/icon16.png",
+    "48": "assets/images/icon48.png",
+    "128": "assets/images/icon128.png"
+  }
+}
