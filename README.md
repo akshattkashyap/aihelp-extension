@@ -9,7 +9,6 @@ A Chrome extension that provides AI-powered explanations for any selected text o
 ## ✨ Features
 
 - **Instant AI Explanations**: Select any text and click "Ask AI" to get clear, concise explanations
-- **Keyboard Shortcut**: Use `Ctrl+Shift+A` (Windows/Linux) or `Cmd+Shift+A` (Mac) for quick access
 - **Clean UI**: Modern, non-intrusive popup and dialog design
 - **Markdown Support**: AI responses render with proper formatting (bold, italic, code)
 - **Works Everywhere**: Functions on any webpage you visit
@@ -72,39 +71,16 @@ This extension requires a Google Gemini API key to function.
 
 ## 📖 Usage
 
-### Using the Popup Button
-
 1. Select any text on a webpage by highlighting it
 2. A small "Ask AI" button will appear near your selection
 3. Click the button to get an AI-powered explanation
 4. A dialog box will display the response
-
-### Using Keyboard Shortcut
-
-1. Select any text on a webpage
-2. Press `Ctrl+Shift+A` (Windows/Linux) or `Cmd+Shift+A` (Mac)
-3. The AI response dialog will appear directly
 
 ### Dialog Controls
 
 - **Close**: Click the X button or press `Escape`
 - **More**: Click "More »" to search the term on Google
 - **Click Outside**: Clicking outside the dialog closes it
-
-## 📁 Project Structure
-
-```
-aihelp-extension/
-├── manifest.json      # Extension configuration (Manifest V3)
-├── background.js      # Service worker - handles API calls
-├── content.js         # Injected script - manages UI and selection
-├── options.html       # Settings page HTML
-├── options.js         # Settings page logic
-├── icon16.png         # Extension icon (16x16)
-├── icon48.png         # Extension icon (48x48)
-├── icon128.png        # Extension icon (128x128)
-└── README.md          # This file
-```
 
 ## 🔧 Technical Details
 

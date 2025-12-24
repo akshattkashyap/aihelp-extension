@@ -21,15 +21,6 @@
     "page": "options.html",
     "open_in_tab": true
   },
-  "commands": {
-    "trigger-ai-lookup": {
-      "suggested_key": {
-        "default": "Ctrl+Shift+A",
-        "mac": "Command+Shift+A"
-      },
-      "description": "Trigger AI lookup on selected text"
-    }
-  },
   "icons": {
     "16": "assets/images/icon16.png",
     "48": "assets/images/icon48.png",

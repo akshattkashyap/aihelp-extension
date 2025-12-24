@@ -625,40 +625,6 @@
     }
   });
 
-  // Listen for keyboard shortcut from background
-  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.type === 'KEYBOARD_SHORTCUT') {
-      const selectedText = getSelectedText();
-      const rect = getSelectionRect();
-
-      if (selectedText && rect) {
-        selectionRect = rect;
-        // Remove any existing UI
-        removePopup();
-        removeDialog();
-        // Directly show dialog (skip popup for keyboard shortcut)
-        currentDialog = createDialogBox(rect, selectedText);
-        
-        // Request AI response
-        chrome.runtime.sendMessage(
-          { type: 'AI_QUERY', text: selectedText },
-          (response) => {
-            if (chrome.runtime.lastError) {
-              updateDialogContent('Failed to connect to extension. Please try again.', true);
-              return;
-            }
-
-            if (response && response.success) {
-              updateDialogContent(response.response);
-            } else {
-              updateDialogContent(response?.error || 'Failed to get AI response', true);
-            }
-          }
-        );
-      }
-    }
-  });
-
   // Log initialization
   console.log('[AI Text Lookup] Content script loaded');
 

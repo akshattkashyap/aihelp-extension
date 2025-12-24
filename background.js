@@ -107,22 +107,4 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     // Return true to indicate async response
     return true;
   }
-
-  // Handle keyboard shortcut trigger
-  if (request.type === 'KEYBOARD_TRIGGER') {
-    // Forward to content script - handled there
-    return false;
-  }
-});
-
-// Listen for keyboard shortcut commands
-chrome.commands.onCommand.addListener((command) => {
-  if (command === 'trigger-ai-lookup') {
-    // Send message to active tab's content script
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      if (tabs[0]?.id) {
-        chrome.tabs.sendMessage(tabs[0].id, { type: 'KEYBOARD_SHORTCUT' });
-      }
-    });
-  }
 });
