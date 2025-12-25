@@ -1,15 +1,15 @@
 // AI Text Lookup - Content Script
 // Handles text selection, popup trigger, and dialogue box rendering
 
-(function() {
-  'use strict';
+(function () {
+  "use strict";
 
   // ============================================
   // CONSTANTS & STATE
   // ============================================
-  
-  const POPUP_ID = 'ai-lookup-popup-trigger';
-  const DIALOG_ID = 'ai-lookup-dialog-box';
+
+  const POPUP_ID = "ai-lookup-popup-trigger";
+  const DIALOG_ID = "ai-lookup-dialog-box";
   const Z_INDEX = 2147483647;
   const POPUP_OFFSET = 8;
   const DEBOUNCE_DELAY = 150;
@@ -30,9 +30,9 @@
     const element = document.createElement(tag);
     Object.assign(element.style, styles);
     Object.entries(attributes).forEach(([key, value]) => {
-      if (key === 'textContent') {
+      if (key === "textContent") {
         element.textContent = value;
-      } else if (key === 'innerHTML') {
+      } else if (key === "innerHTML") {
         element.innerHTML = value;
       } else {
         element.setAttribute(key, value);
@@ -65,7 +65,7 @@
       width: rect.width,
       height: rect.height,
       viewportTop: rect.top,
-      viewportBottom: rect.bottom
+      viewportBottom: rect.bottom,
     };
   }
 
@@ -74,7 +74,7 @@
    */
   function getSelectedText() {
     const selection = window.getSelection();
-    return selection ? selection.toString().trim() : '';
+    return selection ? selection.toString().trim() : "";
   }
 
   /**
@@ -94,53 +94,62 @@
    * Creates the small popup trigger button
    */
   function createPopup(rect) {
-    const popup = createElement('div', {
-      position: 'absolute',
-      zIndex: Z_INDEX,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: '4px',
-      padding: '6px 12px',
-      backgroundColor: '#1a1a2e',
-      color: '#ffffff',
-      fontSize: '12px',
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
-      fontWeight: '500',
-      borderRadius: '16px',
-      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.25), 0 2px 4px rgba(0, 0, 0, 0.15)',
-      cursor: 'pointer',
-      userSelect: 'none',
-      transition: 'transform 0.15s ease, box-shadow 0.15s ease, opacity 0.2s ease',
-      opacity: '0',
-      transform: 'scale(0.9)',
-      whiteSpace: 'nowrap'
-    }, {
-      id: POPUP_ID,
-      role: 'button',
-      'aria-label': 'Ask AI about selected text'
-    });
+    const popup = createElement(
+      "div",
+      {
+        position: "absolute",
+        zIndex: Z_INDEX,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: "4px",
+        padding: "6px 12px",
+        backgroundColor: "#1a1a2e",
+        color: "#ffffff",
+        fontSize: "12px",
+        fontFamily:
+          '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+        fontWeight: "500",
+        borderRadius: "16px",
+        boxShadow:
+          "0 4px 12px rgba(0, 0, 0, 0.25), 0 2px 4px rgba(0, 0, 0, 0.15)",
+        cursor: "pointer",
+        userSelect: "none",
+        transition:
+          "transform 0.15s ease, box-shadow 0.15s ease, opacity 0.2s ease",
+        opacity: "0",
+        transform: "scale(0.9)",
+        whiteSpace: "nowrap",
+      },
+      {
+        id: POPUP_ID,
+        role: "button",
+        "aria-label": "Ask AI about selected text",
+      }
+    );
 
     // Sparkle/AI icon SVG
     const iconSvg = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
     </svg>`;
 
-    popup.innerHTML = iconSvg + '<span>Ask AI</span>';
+    popup.innerHTML = iconSvg + "<span>Ask AI</span>";
 
     // Hover effects
-    popup.addEventListener('mouseenter', () => {
-      popup.style.transform = 'scale(1.05)';
-      popup.style.boxShadow = '0 6px 16px rgba(0, 0, 0, 0.3), 0 3px 6px rgba(0, 0, 0, 0.2)';
+    popup.addEventListener("mouseenter", () => {
+      popup.style.transform = "scale(1.05)";
+      popup.style.boxShadow =
+        "0 6px 16px rgba(0, 0, 0, 0.3), 0 3px 6px rgba(0, 0, 0, 0.2)";
     });
 
-    popup.addEventListener('mouseleave', () => {
-      popup.style.transform = 'scale(1)';
-      popup.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.25), 0 2px 4px rgba(0, 0, 0, 0.15)';
+    popup.addEventListener("mouseleave", () => {
+      popup.style.transform = "scale(1)";
+      popup.style.boxShadow =
+        "0 4px 12px rgba(0, 0, 0, 0.25), 0 2px 4px rgba(0, 0, 0, 0.15)";
     });
 
     // Click handler
-    popup.addEventListener('click', (e) => {
+    popup.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
       handlePopupClick();
@@ -153,8 +162,8 @@
 
     // Fade in animation
     requestAnimationFrame(() => {
-      popup.style.opacity = '1';
-      popup.style.transform = 'scale(1)';
+      popup.style.opacity = "1";
+      popup.style.transform = "scale(1)";
     });
 
     return popup;
@@ -166,21 +175,21 @@
   function positionPopup(popup, rect) {
     const popupHeight = 32;
     const viewportHeight = window.innerHeight;
-    
+
     // Prefer positioning above the selection
     let top = rect.top - popupHeight - POPUP_OFFSET;
-    
+
     // If not enough space above, position below
     if (rect.viewportTop < popupHeight + POPUP_OFFSET + 10) {
       top = rect.bottom + POPUP_OFFSET;
     }
 
     // Center horizontally on selection
-    const left = rect.left + (rect.width / 2);
+    const left = rect.left + rect.width / 2;
 
     popup.style.top = `${top}px`;
     popup.style.left = `${left}px`;
-    popup.style.transform = 'translateX(-50%) scale(1)';
+    popup.style.transform = "translateX(-50%) scale(1)";
   }
 
   /**
@@ -188,8 +197,8 @@
    */
   function removePopup() {
     if (currentPopup) {
-      currentPopup.style.opacity = '0';
-      currentPopup.style.transform = 'translateX(-50%) scale(0.9)';
+      currentPopup.style.opacity = "0";
+      currentPopup.style.transform = "translateX(-50%) scale(0.9)";
       setTimeout(() => {
         removeElement(currentPopup);
         currentPopup = null;
@@ -205,87 +214,101 @@
    * Creates the dialogue box matching the screenshot design
    */
   function createDialogBox(rect, selectedText) {
-    const dialog = createElement('div', {
-      position: 'absolute',
-      zIndex: Z_INDEX,
-      width: '500px',
-      maxWidth: 'calc(100vw - 40px)',
-      backgroundColor: '#ffffff',
-      borderRadius: '8px',
-      boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(0, 0, 0, 0.1)',
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
-      overflow: 'hidden',
-      opacity: '0',
-      transform: 'translateY(-10px)',
-      transition: 'opacity 0.2s ease, transform 0.2s ease'
-    }, {
-      id: DIALOG_ID,
-      role: 'dialog',
-      'aria-label': 'AI Response'
-    });
+    const dialog = createElement(
+      "div",
+      {
+        position: "absolute",
+        zIndex: Z_INDEX,
+        width: "500px",
+        maxWidth: "calc(100vw - 40px)",
+        backgroundColor: "#ffffff",
+        borderRadius: "8px",
+        boxShadow:
+          "0 4px 20px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(0, 0, 0, 0.1)",
+        fontFamily:
+          '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+        overflow: "hidden",
+        opacity: "0",
+        transform: "translateY(-10px)",
+        transition: "opacity 0.2s ease, transform 0.2s ease",
+      },
+      {
+        id: DIALOG_ID,
+        role: "dialog",
+        "aria-label": "AI Response",
+      }
+    );
 
     // Header section
-    const header = createElement('div', {
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      padding: '16px 16px 12px 16px',
-      borderBottom: 'none'
+    const header = createElement("div", {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      padding: "16px 16px 12px 16px",
+      borderBottom: "none",
     });
 
     // Title container
-    const titleContainer = createElement('div', {
-      display: 'flex',
-      alignItems: 'center',
-      gap: '8px'
+    const titleContainer = createElement("div", {
+      display: "flex",
+      alignItems: "center",
+      gap: "8px",
     });
 
     // Format the selected text as title (truncated if needed)
     const displayText = formatDisplayText(selectedText);
-    const titleText = createElement('span', {
-      fontSize: '18px',
-      fontWeight: '600',
-      color: '#1a1a1a',
-      lineHeight: '1.3'
-    }, { textContent: displayText });
+    const titleText = createElement(
+      "span",
+      {
+        fontSize: "18px",
+        fontWeight: "600",
+        color: "#1a1a1a",
+        lineHeight: "1.3",
+      },
+      { textContent: displayText }
+    );
 
     titleContainer.appendChild(titleText);
 
     // Close button (X)
-    const closeButton = createElement('button', {
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      width: '24px',
-      height: '24px',
-      padding: '0',
-      margin: '0',
-      border: 'none',
-      background: 'transparent',
-      cursor: 'pointer',
-      color: '#999999',
-      borderRadius: '4px',
-      transition: 'color 0.15s ease, background-color 0.15s ease'
-    }, {
-      type: 'button',
-      'aria-label': 'Close',
-      innerHTML: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    const closeButton = createElement(
+      "button",
+      {
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        width: "24px",
+        height: "24px",
+        padding: "0",
+        margin: "0",
+        border: "none",
+        background: "transparent",
+        cursor: "pointer",
+        color: "#999999",
+        borderRadius: "4px",
+        transition: "color 0.15s ease, background-color 0.15s ease",
+      },
+      {
+        type: "button",
+        "aria-label": "Close",
+        innerHTML: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <line x1="18" y1="6" x2="6" y2="18"></line>
         <line x1="6" y1="6" x2="18" y2="18"></line>
-      </svg>`
+      </svg>`,
+      }
+    );
+
+    closeButton.addEventListener("mouseenter", () => {
+      closeButton.style.color = "#333333";
+      closeButton.style.backgroundColor = "#f0f0f0";
     });
 
-    closeButton.addEventListener('mouseenter', () => {
-      closeButton.style.color = '#333333';
-      closeButton.style.backgroundColor = '#f0f0f0';
+    closeButton.addEventListener("mouseleave", () => {
+      closeButton.style.color = "#999999";
+      closeButton.style.backgroundColor = "transparent";
     });
 
-    closeButton.addEventListener('mouseleave', () => {
-      closeButton.style.color = '#999999';
-      closeButton.style.backgroundColor = 'transparent';
-    });
-
-    closeButton.addEventListener('click', (e) => {
+    closeButton.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
       removeDialog();
@@ -295,53 +318,61 @@
     header.appendChild(closeButton);
 
     // Content section (AI response)
-    const content = createElement('div', {
-      padding: '0 16px 12px 16px',
-      fontSize: '14px',
-      lineHeight: '1.6',
-      color: '#444444',
-      maxHeight: '200px',
-      overflowY: 'auto'
-    }, {
-      id: 'ai-lookup-content'
-    });
+    const content = createElement(
+      "div",
+      {
+        padding: "0 16px 12px 16px",
+        fontSize: "14px",
+        lineHeight: "1.6",
+        color: "#444444",
+        maxHeight: "200px",
+        overflowY: "auto",
+      },
+      {
+        id: "ai-lookup-content",
+      }
+    );
 
     // Loading state
     content.innerHTML = createLoadingSpinner();
 
     // Footer section (More link)
-    const footer = createElement('div', {
-      display: 'flex',
-      justifyContent: 'flex-end',
-      padding: '8px 16px 14px 16px',
-      borderTop: 'none'
+    const footer = createElement("div", {
+      display: "flex",
+      justifyContent: "flex-end",
+      padding: "8px 16px 14px 16px",
+      borderTop: "none",
     });
 
-    const moreLink = createElement('a', {
-      fontSize: '13px',
-      color: '#1a73e8',
-      textDecoration: 'none',
-      cursor: 'pointer',
-      fontWeight: '500',
-      transition: 'color 0.15s ease'
-    }, {
-      textContent: 'More »',
-      href: '#'
+    const moreLink = createElement(
+      "a",
+      {
+        fontSize: "13px",
+        color: "#1a73e8",
+        textDecoration: "none",
+        cursor: "pointer",
+        fontWeight: "500",
+        transition: "color 0.15s ease",
+      },
+      {
+        textContent: "More »",
+        href: "#",
+      }
+    );
+
+    moreLink.addEventListener("mouseenter", () => {
+      moreLink.style.color = "#1557b0";
     });
 
-    moreLink.addEventListener('mouseenter', () => {
-      moreLink.style.color = '#1557b0';
+    moreLink.addEventListener("mouseleave", () => {
+      moreLink.style.color = "#1a73e8";
     });
 
-    moreLink.addEventListener('mouseleave', () => {
-      moreLink.style.color = '#1a73e8';
-    });
-
-    moreLink.addEventListener('click', (e) => {
+    moreLink.addEventListener("click", (e) => {
       e.preventDefault();
       // Open search in new tab
       const searchQuery = encodeURIComponent(selectedText);
-      window.open(`https://www.google.com/search?q=${searchQuery}`, '_blank');
+      window.open(`https://www.google.com/search?q=${searchQuery}`, "_blank");
     });
 
     footer.appendChild(moreLink);
@@ -358,8 +389,8 @@
 
     // Fade in animation
     requestAnimationFrame(() => {
-      dialog.style.opacity = '1';
-      dialog.style.transform = 'translateY(0)';
+      dialog.style.opacity = "1";
+      dialog.style.transform = "translateY(0)";
     });
 
     return dialog;
@@ -371,7 +402,7 @@
   function formatDisplayText(text) {
     const words = text.split(/\s+/);
     if (words.length > 5) {
-      return words.slice(0, 5).join(' ') + '...';
+      return words.slice(0, 5).join(" ") + "...";
     }
     return text;
   }
@@ -408,10 +439,10 @@
     const dialogWidth = 320;
     const viewportHeight = window.innerHeight;
     const viewportWidth = window.innerWidth;
-    
+
     // Prefer positioning below the selection
     let top = rect.bottom + POPUP_OFFSET;
-    
+
     // If not enough space below, position above
     if (rect.viewportBottom + dialogHeight + POPUP_OFFSET > viewportHeight) {
       top = rect.top - dialogHeight - POPUP_OFFSET;
@@ -419,12 +450,12 @@
 
     // Position horizontally - prefer left-aligned with selection start
     let left = rect.left;
-    
+
     // Ensure dialog doesn't go off-screen right
     if (left + dialogWidth > viewportWidth + window.scrollX - 20) {
       left = viewportWidth + window.scrollX - dialogWidth - 20;
     }
-    
+
     // Ensure dialog doesn't go off-screen left
     if (left < window.scrollX + 20) {
       left = window.scrollX + 20;
@@ -438,28 +469,33 @@
    * Simple markdown to HTML converter
    */
   function parseMarkdown(text) {
-    return text
-      // Escape HTML first
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      // Bold: **text** or __text__
-      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-      .replace(/__(.+?)__/g, '<strong>$1</strong>')
-      // Italic: *text* or _text_
-      .replace(/\*(.+?)\*/g, '<em>$1</em>')
-      .replace(/_(.+?)_/g, '<em>$1</em>')
-      // Code: `text`
-      .replace(/`(.+?)`/g, '<code style="background:#f0f0f0;padding:2px 4px;border-radius:3px;font-family:monospace;">$1</code>')
-      // Line breaks
-      .replace(/\n/g, '<br>');
+    return (
+      text
+        // Escape HTML first
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        // Bold: **text** or __text__
+        .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+        .replace(/__(.+?)__/g, "<strong>$1</strong>")
+        // Italic: *text* or _text_
+        .replace(/\*(.+?)\*/g, "<em>$1</em>")
+        .replace(/_(.+?)_/g, "<em>$1</em>")
+        // Code: `text`
+        .replace(
+          /`(.+?)`/g,
+          '<code style="background:#f0f0f0;padding:2px 4px;border-radius:3px;font-family:monospace;">$1</code>'
+        )
+        // Line breaks
+        .replace(/\n/g, "<br>")
+    );
   }
 
   /**
    * Updates the dialog content with AI response
    */
   function updateDialogContent(content, isError = false) {
-    const contentEl = document.getElementById('ai-lookup-content');
+    const contentEl = document.getElementById("ai-lookup-content");
     if (!contentEl) return;
 
     if (isError) {
@@ -482,7 +518,7 @@
    * Escapes HTML to prevent XSS
    */
   function escapeHtml(text) {
-    const div = document.createElement('div');
+    const div = document.createElement("div");
     div.textContent = text;
     return div.innerHTML;
   }
@@ -492,8 +528,8 @@
    */
   function removeDialog() {
     if (currentDialog) {
-      currentDialog.style.opacity = '0';
-      currentDialog.style.transform = 'translateY(-10px)';
+      currentDialog.style.opacity = "0";
+      currentDialog.style.transform = "translateY(-10px)";
       setTimeout(() => {
         removeElement(currentDialog);
         currentDialog = null;
@@ -525,17 +561,23 @@
 
     // Request AI response
     chrome.runtime.sendMessage(
-      { type: 'AI_QUERY', text: selectedText },
+      { type: "AI_QUERY", text: selectedText },
       (response) => {
         if (chrome.runtime.lastError) {
-          updateDialogContent('Failed to connect to extension. Please try again.', true);
+          updateDialogContent(
+            "Failed to connect to extension. Please try again.",
+            true
+          );
           return;
         }
 
         if (response && response.success) {
           updateDialogContent(response.response);
         } else {
-          updateDialogContent(response?.error || 'Failed to get AI response', true);
+          updateDialogContent(
+            response?.error || "Failed to get AI response",
+            true
+          );
         }
       }
     );
@@ -584,7 +626,7 @@
   // ============================================
 
   // Text selection
-  document.addEventListener('mouseup', (e) => {
+  document.addEventListener("mouseup", (e) => {
     // Don't trigger if clicking on our UI elements
     if (e.target.closest(`#${POPUP_ID}`) || e.target.closest(`#${DIALOG_ID}`)) {
       return;
@@ -593,7 +635,7 @@
   });
 
   // Click outside to close
-  document.addEventListener('mousedown', (e) => {
+  document.addEventListener("mousedown", (e) => {
     const clickedPopup = e.target.closest(`#${POPUP_ID}`);
     const clickedDialog = e.target.closest(`#${DIALOG_ID}`);
 
@@ -607,25 +649,28 @@
   });
 
   // Scroll to close popup (dialog stays)
-  window.addEventListener('scroll', () => {
-    removePopup();
-  }, { passive: true });
+  window.addEventListener(
+    "scroll",
+    () => {
+      removePopup();
+    },
+    { passive: true }
+  );
 
   // Escape key to close
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
       cleanup();
     }
   });
 
   // Handle visibility change
-  document.addEventListener('visibilitychange', () => {
+  document.addEventListener("visibilitychange", () => {
     if (document.hidden) {
       removePopup();
     }
   });
 
   // Log initialization
-  console.log('[AI Text Lookup] Content script loaded');
-
+  console.log("[AI Text Lookup] Content script loaded");
 })();
