@@ -15,12 +15,12 @@ A Chrome extension that provides AI-powered explanations for any selected text o
 
 ## 🚀 Installation
 
-### Method 1: Load Unpacked (Developer Mode)
+### Method: Load Unpacked (Developer Mode)
 
 1. **Download the Extension**
 
    ```bash
-   git clone https://github.com/yourusername/aihelp-extension.git
+   git clone https://github.com/akshattkashyap/aihelp-extension.git
    ```
 
    Or download and extract the ZIP file.
