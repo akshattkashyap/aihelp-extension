@@ -91,7 +91,7 @@
   // ============================================
 
   /**
-   * Creates the small popup trigger button
+   * Creates the small popup trigger button with wand icon and Ask AI button
    */
   function createPopup(rect) {
     const popup = createElement(
@@ -102,18 +102,17 @@
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        gap: "4px",
-        padding: "6px 12px",
+        gap: "0",
+        padding: "2px",
         backgroundColor: "#1a1a2e",
         color: "#ffffff",
         fontSize: "12px",
         fontFamily:
           '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
         fontWeight: "500",
-        borderRadius: "16px",
+        borderRadius: "20px",
         boxShadow:
           "0 4px 12px rgba(0, 0, 0, 0.25), 0 2px 4px rgba(0, 0, 0, 0.15)",
-        cursor: "pointer",
         userSelect: "none",
         transition:
           "transform 0.15s ease, box-shadow 0.15s ease, opacity 0.2s ease",
@@ -123,37 +122,103 @@
       },
       {
         id: POPUP_ID,
-        role: "button",
-        "aria-label": "Ask AI about selected text",
+        role: "group",
+        "aria-label": "AI actions for selected text",
       }
     );
 
-    // Sparkle/AI icon SVG
-    const iconSvg = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
-    </svg>`;
+    // Magic wand icon - using the wand.svg file from assets
+    const wandIconUrl = chrome.runtime.getURL("assets/images/wand.svg");
+    const wandImg = `<img src="${wandIconUrl}" style="width: 18px; height: 18px; object-fit: contain; flex-shrink: 0;" alt="Explain" />`;
 
-    popup.innerHTML = iconSvg + "<span>Ask AI</span>";
+    // Wand button (auto-explain)
+    const wandButton = createElement(
+      "button",
+      {
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "6px 12px",
+        minWidth: "40px",
+        background: "transparent",
+        border: "none",
+        color: "#ffffff",
+        cursor: "pointer",
+        transition: "background-color 0.15s ease",
+      },
+      {
+        type: "button",
+        "aria-label": "Auto-explain selected text",
+        innerHTML: wandImg,
+      }
+    );
 
-    // Hover effects
-    popup.addEventListener("mouseenter", () => {
-      popup.style.transform = "scale(1.05)";
-      popup.style.boxShadow =
-        "0 6px 16px rgba(0, 0, 0, 0.3), 0 3px 6px rgba(0, 0, 0, 0.2)";
+    wandButton.addEventListener("mouseenter", () => {
+      wandButton.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
     });
 
-    popup.addEventListener("mouseleave", () => {
-      popup.style.transform = "scale(1)";
-      popup.style.boxShadow =
-        "0 4px 12px rgba(0, 0, 0, 0.25), 0 2px 4px rgba(0, 0, 0, 0.15)";
+    wandButton.addEventListener("mouseleave", () => {
+      wandButton.style.backgroundColor = "transparent";
     });
 
-    // Click handler
-    popup.addEventListener("click", (e) => {
+    wandButton.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
-      handlePopupClick();
+      handlePopupClick(); // Uses the default auto-explain prompt
     });
+
+    // Separator
+    const separator = createElement(
+      "span",
+      {
+        color: "rgba(255, 255, 255, 0.3)",
+        fontSize: "14px",
+        padding: "0 2px",
+        userSelect: "none",
+      },
+      { textContent: "|" }
+    );
+
+    // Ask AI button (custom question)
+    const askButton = createElement(
+      "button",
+      {
+        display: "flex",
+        alignItems: "center",
+        gap: "4px",
+        padding: "6px 10px",
+        background: "transparent",
+        border: "none",
+        color: "#ffffff",
+        cursor: "pointer",
+        fontSize: "12px",
+        fontWeight: "500",
+        transition: "background-color 0.15s ease",
+      },
+      {
+        type: "button",
+        "aria-label": "Ask AI a custom question",
+        textContent: "Ask AI",
+      }
+    );
+
+    askButton.addEventListener("mouseenter", () => {
+      askButton.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
+    });
+
+    askButton.addEventListener("mouseleave", () => {
+      askButton.style.backgroundColor = "transparent";
+    });
+
+    askButton.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      handleAskAIClick(); // Opens custom question dialog
+    });
+
+    popup.appendChild(wandButton);
+    popup.appendChild(separator);
+    popup.appendChild(askButton);
 
     // Position the popup
     positionPopup(popup, rect);
@@ -325,7 +390,7 @@
         fontSize: "14px",
         lineHeight: "1.6",
         color: "#444444",
-        maxHeight: "200px",
+        maxHeight: "400px",
         overflowY: "auto",
       },
       {
@@ -581,6 +646,336 @@
         }
       }
     );
+  }
+
+  /**
+   * Handles Ask AI click - opens dialog with custom question input
+   */
+  function handleAskAIClick() {
+    const selectedText = getSelectedText();
+    const rect = selectionRect;
+
+    if (!selectedText || !rect) {
+      removePopup();
+      return;
+    }
+
+    // Remove popup
+    removePopup();
+
+    // Create dialog with input
+    currentDialog = createAskAIDialogBox(rect, selectedText);
+  }
+
+  /**
+   * Creates a dialog box with a text input for custom questions
+   */
+  function createAskAIDialogBox(rect, selectedText) {
+    const dialog = createElement(
+      "div",
+      {
+        position: "absolute",
+        zIndex: Z_INDEX,
+        width: "500px",
+        maxWidth: "calc(100vw - 40px)",
+        backgroundColor: "#ffffff",
+        borderRadius: "8px",
+        boxShadow:
+          "0 4px 20px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(0, 0, 0, 0.1)",
+        fontFamily:
+          '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+        overflow: "hidden",
+        opacity: "0",
+        transform: "translateY(-10px)",
+        transition: "opacity 0.2s ease, transform 0.2s ease",
+      },
+      {
+        id: DIALOG_ID,
+        role: "dialog",
+        "aria-label": "Ask AI",
+      }
+    );
+
+    // Header section
+    const header = createElement("div", {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      padding: "16px 16px 12px 16px",
+      borderBottom: "none",
+    });
+
+    // Title container
+    const titleContainer = createElement("div", {
+      display: "flex",
+      alignItems: "center",
+      gap: "8px",
+    });
+
+    const displayText = formatDisplayText(selectedText);
+    const titleText = createElement(
+      "span",
+      {
+        fontSize: "18px",
+        fontWeight: "600",
+        color: "#1a1a1a",
+        lineHeight: "1.3",
+      },
+      { textContent: `Ask about: ${displayText}` }
+    );
+
+    titleContainer.appendChild(titleText);
+
+    // Close button (X)
+    const closeButton = createElement(
+      "button",
+      {
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        width: "24px",
+        height: "24px",
+        padding: "0",
+        margin: "0",
+        border: "none",
+        background: "transparent",
+        cursor: "pointer",
+        color: "#999999",
+        borderRadius: "4px",
+        transition: "color 0.15s ease, background-color 0.15s ease",
+      },
+      {
+        type: "button",
+        "aria-label": "Close",
+        innerHTML: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>`,
+      }
+    );
+
+    closeButton.addEventListener("mouseenter", () => {
+      closeButton.style.color = "#333333";
+      closeButton.style.backgroundColor = "#f0f0f0";
+    });
+
+    closeButton.addEventListener("mouseleave", () => {
+      closeButton.style.color = "#999999";
+      closeButton.style.backgroundColor = "transparent";
+    });
+
+    closeButton.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      removeDialog();
+    });
+
+    header.appendChild(titleContainer);
+    header.appendChild(closeButton);
+
+    // Input section
+    const inputSection = createElement("div", {
+      padding: "0 16px 12px 16px",
+    });
+
+    const inputWrapper = createElement("div", {
+      display: "flex",
+      gap: "8px",
+    });
+
+    const textInput = createElement(
+      "input",
+      {
+        flex: "1",
+        padding: "10px 12px",
+        fontSize: "14px",
+        border: "1px solid #e0e0e0",
+        borderRadius: "6px",
+        outline: "none",
+        fontFamily: "inherit",
+        transition: "border-color 0.15s ease, box-shadow 0.15s ease",
+      },
+      {
+        type: "text",
+        placeholder: "Ask a question about the selected text...",
+        id: "ai-lookup-question-input",
+      }
+    );
+
+    textInput.addEventListener("focus", () => {
+      textInput.style.borderColor = "#1a73e8";
+      textInput.style.boxShadow = "0 0 0 2px rgba(26, 115, 232, 0.2)";
+    });
+
+    textInput.addEventListener("blur", () => {
+      textInput.style.borderColor = "#e0e0e0";
+      textInput.style.boxShadow = "none";
+    });
+
+    const submitButton = createElement(
+      "button",
+      {
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "10px 16px",
+        backgroundColor: "#1a73e8",
+        color: "#ffffff",
+        border: "none",
+        borderRadius: "6px",
+        fontSize: "14px",
+        fontWeight: "500",
+        cursor: "pointer",
+        transition: "background-color 0.15s ease",
+        whiteSpace: "nowrap",
+      },
+      {
+        type: "button",
+        textContent: "Ask",
+      }
+    );
+
+    submitButton.addEventListener("mouseenter", () => {
+      submitButton.style.backgroundColor = "#1557b0";
+    });
+
+    submitButton.addEventListener("mouseleave", () => {
+      submitButton.style.backgroundColor = "#1a73e8";
+    });
+
+    const submitQuestion = () => {
+      const question = textInput.value.trim();
+      if (!question) return;
+
+      // Replace input section with loading/response
+      inputSection.innerHTML = "";
+      const content = createElement(
+        "div",
+        {
+          fontSize: "14px",
+          lineHeight: "1.6",
+          color: "#444444",
+          maxHeight: "400px",
+          overflowY: "auto",
+        },
+        { id: "ai-lookup-content" }
+      );
+      content.innerHTML = createLoadingSpinner();
+      inputSection.appendChild(content);
+
+      // Send custom question to AI
+      chrome.runtime.sendMessage(
+        { type: "AI_QUERY_CUSTOM", text: selectedText, question: question },
+        (response) => {
+          if (chrome.runtime.lastError) {
+            updateDialogContent(
+              "Failed to connect to extension. Please try again.",
+              true
+            );
+            return;
+          }
+
+          if (response && response.success) {
+            updateDialogContent(response.response);
+          } else {
+            updateDialogContent(
+              response?.error || "Failed to get AI response",
+              true
+            );
+          }
+
+          // Show the footer after response
+          const footerEl = document.getElementById("ai-lookup-footer");
+          if (footerEl) {
+            footerEl.style.display = "flex";
+          }
+        }
+      );
+    };
+
+    submitButton.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      submitQuestion();
+    });
+
+    textInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        submitQuestion();
+      }
+    });
+
+    inputWrapper.appendChild(textInput);
+    inputWrapper.appendChild(submitButton);
+    inputSection.appendChild(inputWrapper);
+
+    // Footer section (hidden initially, shown after response)
+    const footer = createElement(
+      "div",
+      {
+        display: "none",
+        justifyContent: "flex-end",
+        padding: "8px 16px 14px 16px",
+        borderTop: "none",
+      },
+      { id: "ai-lookup-footer" }
+    );
+
+    const moreLink = createElement(
+      "a",
+      {
+        fontSize: "13px",
+        color: "#1a73e8",
+        textDecoration: "none",
+        cursor: "pointer",
+        fontWeight: "500",
+        transition: "color 0.15s ease",
+      },
+      {
+        textContent: "More »",
+        href: "#",
+      }
+    );
+
+    moreLink.addEventListener("mouseenter", () => {
+      moreLink.style.color = "#1557b0";
+    });
+
+    moreLink.addEventListener("mouseleave", () => {
+      moreLink.style.color = "#1a73e8";
+    });
+
+    moreLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      const searchQuery = encodeURIComponent(selectedText);
+      window.open(`https://www.google.com/search?q=${searchQuery}`, "_blank");
+    });
+
+    footer.appendChild(moreLink);
+
+    // Assemble dialog
+    dialog.appendChild(header);
+    dialog.appendChild(inputSection);
+    dialog.appendChild(footer);
+
+    // Position the dialog
+    positionDialog(dialog, rect);
+
+    document.body.appendChild(dialog);
+
+    // Fade in animation
+    requestAnimationFrame(() => {
+      dialog.style.opacity = "1";
+      dialog.style.transform = "translateY(0)";
+    });
+
+    // Focus the input after animation
+    setTimeout(() => {
+      textInput.focus();
+    }, 200);
+
+    return dialog;
   }
 
   /**
