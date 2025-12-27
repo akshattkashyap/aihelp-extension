@@ -15,33 +15,41 @@ A Chrome extension that provides AI-powered explanations for any selected text o
 
 ## 🚀 Installation
 
-### Method: Load Unpacked (Developer Mode)
+### Method 1: Easy Install (Packed Extension)
 
 1. **Download the Extension**
+
+   - Go to the [Releases page](https://github.com/akshattkashyap/aihelp-extension/releases).
+   - Download the latest `aihelp-extension.crx` file to your computer.
+   - **Important:** Right-click the asset link and choose "Save link as..." if clicking it directly doesn't work.
+
+2. **Open Extensions Page**
+
+   - In Chrome, navigate to `chrome://extensions/`.
+   - **Enable Developer Mode** by toggling the switch in the top-right corner.
+
+3. **Install via Drag-and-Drop**
+   - Open the folder on your computer where you downloaded the `.crx` file.
+   - **Drag and drop** the `.crx` file directly onto the `chrome://extensions/` page.
+   - Click **"Add extension"** when prompted.
+
+> **Note:** Do NOT double-click the `.crx` file to open it. Chrome blocks direct installs securely. You MUST drag and drop it onto the extensions page with Developer Mode on.
+
+### Method 2: Load from Source (For Developers)
+
+1. **Download the Source Code**
 
    ```bash
    git clone https://github.com/akshattkashyap/aihelp-extension.git
    ```
 
-   Or download and extract the ZIP file.
+   Or download and extract the Source Code ZIP file.
 
-2. **Open Chrome Extensions**
-
-   - Navigate to `chrome://extensions/` in your Chrome browser
-   - Or go to Menu → More Tools → Extensions
-
-3. **Enable Developer Mode**
-
-   - Toggle the "Developer mode" switch in the top-right corner
-
-4. **Load the Extension**
-
-   - Click "Load unpacked"
-   - Select the `aihelp-extension` folder containing `manifest.json`
-
-5. **Pin the Extension** (Optional)
-   - Click the puzzle icon in Chrome's toolbar
-   - Pin "AI Text Lookup" for easy access
+2. **Load Unpacked**
+   - Go to `chrome://extensions/`
+   - Enable **Developer Mode** (top-right).
+   - Click **"Load unpacked"**.
+   - Select the extracted `aihelp-extension` folder.
 
 ## ⚙️ Configuration
 
