@@ -104,7 +104,7 @@
         justifyContent: "center",
         gap: "0",
         padding: "2px",
-        backgroundColor: "#1a1a2e",
+        backgroundColor: "#181822",
         color: "#ffffff",
         fontSize: "12px",
         fontFamily:
@@ -129,7 +129,7 @@
 
     // Magic wand icon - using the wand.svg file from assets
     const wandIconUrl = chrome.runtime.getURL("assets/images/wand.svg");
-    const wandImg = `<img src="${wandIconUrl}" style="width: 18px; height: 18px; object-fit: contain; flex-shrink: 0;" alt="Explain" />`;
+    const wandImg = `<img src="${wandIconUrl}" style="width: 18px; height: 18px; object-fit: contain; flex-shrink: 0; display: block; margin: 0; padding: 0; border: none; background: none;" alt="Explain" />`;
 
     // Wand button (auto-explain)
     const wandButton = createElement(
@@ -138,13 +138,19 @@
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: "6px 12px",
-        minWidth: "40px",
+        width: "36px",
+        height: "30px",
+        padding: "0",
+        margin: "0",
+        appearance: "none",
         background: "transparent",
         border: "none",
         color: "#ffffff",
         cursor: "pointer",
         transition: "background-color 0.15s ease",
+        borderRadius: "15px 0 0 15px",
+        boxSizing: "border-box",
+        lineHeight: "0",
       },
       {
         type: "button",
@@ -186,7 +192,8 @@
         display: "flex",
         alignItems: "center",
         gap: "4px",
-        padding: "6px 10px",
+        height: "30px",
+        padding: "0 12px",
         background: "transparent",
         border: "none",
         color: "#ffffff",
@@ -194,6 +201,7 @@
         fontSize: "12px",
         fontWeight: "500",
         transition: "background-color 0.15s ease",
+        borderRadius: "0 15px 15px 0",
       },
       {
         type: "button",
@@ -392,6 +400,7 @@
         color: "#444444",
         maxHeight: "400px",
         overflowY: "auto",
+        paddingRight: "15px",
       },
       {
         id: "ai-lookup-content",
@@ -789,6 +798,8 @@
         flex: "1",
         padding: "10px 12px",
         fontSize: "14px",
+        color: "#1b1a1aff",
+        backgroundColor: "#ffffff",
         border: "1px solid #e0e0e0",
         borderRadius: "6px",
         outline: "none",
@@ -857,6 +868,7 @@
           color: "#444444",
           maxHeight: "400px",
           overflowY: "auto",
+          paddingRight: "15px",
         },
         { id: "ai-lookup-content" }
       );

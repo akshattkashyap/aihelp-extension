@@ -89,9 +89,6 @@
       }
       a {
         color: #1a73e8;
-        text-decoration: none;
-      }
-      a:hover {
         text-decoration: underline;
       }
     </style>
@@ -100,25 +97,14 @@
     <div class="container">
       <h1>AI Text Lookup Settings</h1>
       <p>
-        Enter your Gemini API key. Get one free at
-        <a href="https://aistudio.google.com/apikey" target="_blank"
-          >Google AI Studio</a
+        Enter your Groq API key. Get one free at
+        <a href="https://console.groq.com/keys" target="_blank"
+          >Groq</a
         >
       </p>
 
-      <label for="model">Gemini Model</label>
-      <select id="model">
-        <option value="gemini-2.5-flash-lite">
-          Gemini 2.5 Flash Lite (Recommended)
-        </option>
-        <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
-        <option value="gemini-3-flash-preview">
-          Gemini 3 Flash Preview (Experimental)
-        </option>
-      </select>
-
-      <label for="apiKey">Gemini API Key</label>
-      <input type="password" id="apiKey" placeholder="AIzaSy..." />
+      <!-- <label for="apiKey">Gemini API Key</label> -->
+      <input type="password" id="apiKey" placeholder="gsk...." />
 
       <button id="saveBtn">Save API Key</button>
 

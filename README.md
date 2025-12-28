@@ -1,10 +1,10 @@
 # AI Text Lookup
 
-A Chrome extension that provides AI-powered explanations for any selected text on the web. Highlight any word, phrase, or sentence and get instant definitions and explanations powered by Google's Gemini AI.
+A Chrome extension that provides AI-powered explanations for any selected text on the web. Highlight any word, phrase, or sentence and get instant definitions and explanations powered by the Groq API.
 
 ![AI Text Lookup Demo](https://img.shields.io/badge/Chrome-Extension-green?style=for-the-badge&logo=google-chrome)
 ![Manifest V3](https://img.shields.io/badge/Manifest-V3-blue?style=for-the-badge)
-![Gemini API](https://img.shields.io/badge/Powered%20by-Gemini%20AI-purple?style=for-the-badge)
+![Groq API](https://img.shields.io/badge/Powered%20by-Groq-purple?style=for-the-badge)
 
 ## ✨ Features
 
@@ -53,29 +53,22 @@ A Chrome extension that provides AI-powered explanations for any selected text o
 
 ## ⚙️ Configuration
 
-### Setting Up Your API Key and Model
+### Setting Up Your API Key
 
-This extension requires a Google Gemini API key to function.
+This extension requires a Groq API key to function.
 
-1. **Get a Free API Key**
+1. **Get an API Key**
 
-   - Visit [Google AI Studio](https://aistudio.google.com/apikey)
-   - Sign in with your Google account
-   - Click "Create API Key"
-   - Copy your new API key
+   - Visit https://console.groq.com/keys
+   - Create an API key and copy it
 
 2. **Configure the Extension**
    - Right-click the extension icon in Chrome's toolbar
    - Select "Options" (or click the extension icon → ⚙️)
-   - **Select your preferred Gemini model** from the dropdown:
-     - **Gemini 2.5 Flash** (Default - Recommended)
-     - Gemini 1.5 Flash
-     - Gemini 1.5 Pro (Slower, more capable)
-     - Gemini 3 Flash Preview (Experimental)
    - Paste your API key in the input field
    - Click "Save API Key"
 
-> **Note**: Your API key and model preference are stored securely in Chrome's sync storage and never shared with third parties.
+> **Note**: Your API key is stored securely in Chrome's sync storage and never shared with third parties.
 
 ## 📖 Usage
 
@@ -101,8 +94,6 @@ This extension requires a Google Gemini API key to function.
 
 ### API Configuration
 
-- **Default Model**: `gemini-2.5-flash` (customizable in options)
-- **Available Models**: Gemini 2.5 Flash, 1.5 Flash, 1.5 Pro, 3 Flash Preview
 - **Max Tokens**: 1000 tokens per response
 - **Temperature**: 0.7 (balanced creativity/accuracy)
 
@@ -111,7 +102,7 @@ This extension requires a Google Gemini API key to function.
 ### "API key not configured" Error
 
 1. Right-click the extension icon → Options
-2. Enter your Gemini API key
+2. Enter your API key
 3. Click "Save API Key"
 
 ### "Ask AI" Button Not Appearing
@@ -123,8 +114,8 @@ This extension requires a Google Gemini API key to function.
 ### Slow or No Response
 
 - Check your internet connection
-- Verify your API key is valid at [Google AI Studio](https://aistudio.google.com/)
-- The Gemini API may have temporary rate limits
+- Verify your API key is valid at https://console.groq.com/keys
+- The Groq API may have temporary rate limits
 
 ### Extension Not Working on Certain Pages
 
@@ -134,7 +125,7 @@ This extension requires a Google Gemini API key to function.
 ## 🔐 Privacy
 
 - Your API key is stored locally in Chrome's sync storage
-- Selected text is sent only to Google's Gemini API
+- Selected text is sent only to the Groq API
 - No data is collected, stored, or shared by this extension
 - All communication uses HTTPS
 
@@ -155,5 +146,5 @@ Contributions are welcome! Feel free to:
 ---
 
 <p align="center">
-  Made with ❤️ using Google Gemini AI
+   Made with ❤️ using Groq
 </p>
