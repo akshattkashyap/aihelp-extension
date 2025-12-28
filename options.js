@@ -1,25 +1,20 @@
-// Options page script - handles saving/loading API key and model
+// Options page script - handles saving/loading API key
 
 document.addEventListener("DOMContentLoaded", () => {
-  const modelSelect = document.getElementById("model");
   const apiKeyInput = document.getElementById("apiKey");
   const saveBtn = document.getElementById("saveBtn");
   const status = document.getElementById("status");
 
   // Load existing settings
-  chrome.storage.sync.get(["geminiApiKey", "geminiModel"], (result) => {
+  chrome.storage.sync.get(["geminiApiKey"], (result) => {
     if (result.geminiApiKey) {
       apiKeyInput.value = result.geminiApiKey;
-    }
-    if (result.geminiModel) {
-      modelSelect.value = result.geminiModel;
     }
   });
 
   // Save settings
   saveBtn.addEventListener("click", () => {
     const apiKey = apiKeyInput.value.trim();
-    const model = modelSelect.value;
 
     if (!apiKey) {
       status.textContent = "Please enter an API key";
@@ -27,21 +22,27 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    if (!apiKey.startsWith("AIza")) {
-      status.textContent = 'Invalid API key format. Should start with "AIza"';
-      status.className = "status error";
-      return;
-    }
+    // Reset status while saving
+    status.textContent = "Saving...";
+    status.className = "status";
 
     chrome.storage.sync.set(
-      { geminiApiKey: apiKey, geminiModel: model },
+      { geminiApiKey: apiKey },
       () => {
-        status.textContent = `✓ Settings saved! Using ${model}`;
+        if (chrome.runtime.lastError) {
+          status.textContent =
+            chrome.runtime.lastError.message || "Failed to save API key";
+          status.className = "status error";
+          return;
+        }
+
+        status.textContent = "✓ API key saved";
         status.className = "status success";
 
         // Hide after 3 seconds
         setTimeout(() => {
           status.className = "status";
+          status.textContent = "";
         }, 3000);
       }
     );

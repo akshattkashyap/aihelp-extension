@@ -104,7 +104,7 @@
         justifyContent: "center",
         gap: "0",
         padding: "2px",
-        backgroundColor: "#1a1a2e",
+        backgroundColor: "#181822",
         color: "#ffffff",
         fontSize: "12px",
         fontFamily:
@@ -145,6 +145,7 @@
         color: "#ffffff",
         cursor: "pointer",
         transition: "background-color 0.15s ease",
+        borderRadius: "20px 0 0 20px",
       },
       {
         type: "button",
@@ -194,6 +195,7 @@
         fontSize: "12px",
         fontWeight: "500",
         transition: "background-color 0.15s ease",
+        borderRadius: "0 20px 20px 0",
       },
       {
         type: "button",
@@ -392,6 +394,7 @@
         color: "#444444",
         maxHeight: "400px",
         overflowY: "auto",
+        paddingRight: "15px",
       },
       {
         id: "ai-lookup-content",
@@ -789,6 +792,8 @@
         flex: "1",
         padding: "10px 12px",
         fontSize: "14px",
+        color: "#1b1a1aff",
+        backgroundColor: "#ffffff",
         border: "1px solid #e0e0e0",
         borderRadius: "6px",
         outline: "none",
@@ -857,6 +862,7 @@
           color: "#444444",
           maxHeight: "400px",
           overflowY: "auto",
+          paddingRight: "15px",
         },
         { id: "ai-lookup-content" }
       );

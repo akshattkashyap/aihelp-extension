@@ -1,61 +1,52 @@
 // AI Text Lookup - Background Service Worker
-// Handles AI API calls and message passing using Gemini API
+// Handles AI API calls and message passing
 
 /**
- * Gets API key and model from Chrome storage
+ * Gets API key from Chrome storage
  */
 async function getSettings() {
   return new Promise((resolve) => {
-    chrome.storage.sync.get(["geminiApiKey", "geminiModel"], (result) => {
+    chrome.storage.sync.get(["geminiApiKey"], (result) => {
       resolve({
         apiKey: result.geminiApiKey || null,
-        model: result.geminiModel || "gemini-2.5-flash-lite", // Default model
       });
     });
   });
 }
 
 /**
- * List of available Gemini models for fallback
- */
-const AVAILABLE_MODELS = [
-  "gemini-2.5-flash-lite",
-  "gemini-2.5-flash",
-  "gemini-3-flash-preview",
-];
-
-/**
- * Makes a single API call to Gemini with a specific model
+ * Makes a single API call to the configured AI provider
  * @param {string} text - The text to explain
  * @param {string} apiKey - The API key
- * @param {string} model - The model to use
  * @returns {Promise<{success: boolean, response?: string, error?: string, statusCode?: number}>}
  */
-async function makeAPICall(text, apiKey, model) {
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+async function makeAPICall(text, apiKey) {
+  const endpoint = "https://api.groq.com/openai/v1/chat/completions";
 
-  const prompt = `Explain the following text in simple terms (in as much detail as needed depending on the text) as if to a beginner with no background knowledge. Focus only on what the text means. Respond directly with the explanation only, in plain text, concise, with no references to instructions, highlighting, or the act of explaining.\n\n"${text}"`;
+  const prompt =
+    "Explain the user's text clearly for a beginner. Respond with the explanation only in plain text. Do not ask questions or request more input.";
 
   try {
     const response = await fetch(endpoint, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        contents: [
+        model: "llama-3.1-8b-instant",
+        messages: [
           {
-            parts: [
-              {
-                text: prompt,
-              },
-            ],
+            role: "system",
+            content: prompt,
+          },
+          { 
+            role: "user", 
+            content: text 
           },
         ],
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 1000,
-        },
+        temperature: 0.7,
+        max_tokens: 1000,
       }),
     });
 
@@ -71,7 +62,8 @@ async function makeAPICall(text, apiKey, model) {
     }
 
     const data = await response.json();
-    const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+    // const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+    const aiResponse = data.choices?.[0]?.message?.content?.trim();
 
     if (!aiResponse) {
       return {
@@ -93,14 +85,13 @@ async function makeAPICall(text, apiKey, model) {
 }
 
 /**
- * Makes a Gemini API call to get explanation for the selected text
- * Implements fallback to other models if 429 (rate limit) error occurs
+ * Gets an AI response to explain the selected text
  * @param {string} text - The selected text to explain
  * @returns {Promise<{success: boolean, response?: string, error?: string, modelUsed?: string}>}
  */
 async function getAIResponse(text) {
   try {
-    const { apiKey, model: selectedModel } = await getSettings();
+    const { apiKey } = await getSettings();
 
     if (!apiKey) {
       return {
@@ -110,56 +101,23 @@ async function getAIResponse(text) {
       };
     }
 
-    // Try the selected model first
-    console.log(`Trying selected model: ${selectedModel}`);
-    let result = await makeAPICall(text, apiKey, selectedModel);
+    let result = await makeAPICall(text, apiKey);
 
     if (result.success) {
       return {
         ...result,
-        modelUsed: selectedModel,
+        modelUsed: "llama-3.1-8b-instant",
       };
     }
 
-    // If we got a 429 error, try other models
-    if (result.statusCode === 429) {
-      console.log(
-        `Rate limit hit on ${selectedModel}, trying fallback models...`
-      );
-
-      // Get all models except the one that failed
-      const fallbackModels = AVAILABLE_MODELS.filter(
-        (m) => m !== selectedModel
-      );
-
-      for (const fallbackModel of fallbackModels) {
-        console.log(`Trying fallback model: ${fallbackModel}`);
-        result = await makeAPICall(text, apiKey, fallbackModel);
-
-        if (result.success) {
-          console.log(`Success with fallback model: ${fallbackModel}`);
-          return {
-            ...result,
-            modelUsed: fallbackModel,
-          };
-        }
-
-        // If this fallback also hit 429, continue to next model
-        if (result.statusCode !== 429) {
-          // If it's a different error, stop trying and return the error
-          break;
-        }
-      }
-    }
-
     // If all models failed or original error wasn't 429
-    console.error("All models failed or non-429 error:", result);
+    console.error("Model failed", result);
     return {
       success: false,
       error: result.error || "Failed to get AI response",
     };
   } catch (error) {
-    console.error("Gemini API Error:", error);
+    console.error("Groq API Error:", error);
     return {
       success: false,
       error: error.message || "Failed to get AI response",
@@ -232,38 +190,40 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 /**
- * Makes a single API call to Gemini with a custom prompt
+ * Makes a single API call with a custom prompt
  * @param {string} text - The selected text
  * @param {string} question - The user's question
  * @param {string} apiKey - The API key
- * @param {string} model - The model to use
  * @returns {Promise<{success: boolean, response?: string, error?: string, statusCode?: number}>}
  */
-async function makeCustomAPICall(text, question, apiKey, model) {
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+async function makeCustomAPICall(text, question, apiKey) {
+  const endpoint = "https://api.groq.com/openai/v1/chat/completions";
 
-  const prompt = `Given the following text:\n\n"${text}"\n\nAnswer this question about it or Use the following text as Context: ${question}\n\nExplain and give a clear, helpful answer in plain text.`;
+  const prompt =
+    "You will receive a PASSAGE and a FOLLOWUP. The FOLLOWUP may be (a) a direct question about the passage or (b) extra context/instructions for how to explain it. Respond immediately with a helpful answer/explanation that uses the PASSAGE as the main context and respects the FOLLOWUP. If the passage is short, still answer as best you can. Plain text only. Never ask the user to provide the passage/followup and never say you're ready for input.";
 
   try {
+
     const response = await fetch(endpoint, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        contents: [
+        model: "llama-3.1-8b-instant",
+        messages: [
           {
-            parts: [
-              {
-                text: prompt,
-              },
-            ],
+            role: "system",
+            content: prompt,
+          },
+          { 
+            role: "user", 
+            content: `PASSAGE:\n${text}\n\nFOLLOWUP (question or context):\n${question}`,
           },
         ],
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 1000,
-        },
+        temperature: 0.7,
+        max_tokens: 1000,
       }),
     });
 
@@ -279,7 +239,8 @@ async function makeCustomAPICall(text, question, apiKey, model) {
     }
 
     const data = await response.json();
-    const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+    // const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+    const aiResponse = data.choices?.[0]?.message?.content?.trim();
 
     if (!aiResponse) {
       return {
@@ -301,15 +262,14 @@ async function makeCustomAPICall(text, question, apiKey, model) {
 }
 
 /**
- * Gets AI response for a custom question about the selected text
- * Implements fallback to other models if 429 (rate limit) error occurs
+ * Gets AI response for a custom followup about the selected text
  * @param {string} text - The selected text
  * @param {string} question - The user's question
  * @returns {Promise<{success: boolean, response?: string, error?: string, modelUsed?: string}>}
  */
 async function getCustomAIResponse(text, question) {
   try {
-    const { apiKey, model: selectedModel } = await getSettings();
+    const { apiKey } = await getSettings();
 
     if (!apiKey) {
       return {
@@ -319,56 +279,23 @@ async function getCustomAIResponse(text, question) {
       };
     }
 
-    // Try the selected model first
-    console.log(`Trying selected model: ${selectedModel}`);
-    let result = await makeCustomAPICall(text, question, apiKey, selectedModel);
+    let result = await makeCustomAPICall(text, question, apiKey);
 
     if (result.success) {
       return {
         ...result,
-        modelUsed: selectedModel,
+        modelUsed: "llama-3.1-8b-instant",
       };
     }
 
-    // If we got a 429 error, try other models
-    if (result.statusCode === 429) {
-      console.log(
-        `Rate limit hit on ${selectedModel}, trying fallback models...`
-      );
-
-      // Get all models except the one that failed
-      const fallbackModels = AVAILABLE_MODELS.filter(
-        (m) => m !== selectedModel
-      );
-
-      for (const fallbackModel of fallbackModels) {
-        console.log(`Trying fallback model: ${fallbackModel}`);
-        result = await makeCustomAPICall(text, question, apiKey, fallbackModel);
-
-        if (result.success) {
-          console.log(`Success with fallback model: ${fallbackModel}`);
-          return {
-            ...result,
-            modelUsed: fallbackModel,
-          };
-        }
-
-        // If this fallback also hit 429, continue to next model
-        if (result.statusCode !== 429) {
-          // If it's a different error, stop trying and return the error
-          break;
-        }
-      }
-    }
-
     // If all models failed or original error wasn't 429
-    console.error("All models failed or non-429 error:", result);
+    console.error("Model failed or non-429 error:", result);
     return {
       success: false,
       error: result.error || "Failed to get AI response",
     };
   } catch (error) {
-    console.error("Gemini API Error:", error);
+    console.error("Groq API Error:", error);
     return {
       success: false,
       error: error.message || "Failed to get AI response",
