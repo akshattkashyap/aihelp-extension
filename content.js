@@ -148,9 +148,6 @@
         color: "#ffffff",
         cursor: "pointer",
         transition: "background-color 0.15s ease",
-        borderRadius: "15px 0 0 15px",
-        boxSizing: "border-box",
-        lineHeight: "0",
       },
       {
         type: "button",
@@ -201,7 +198,6 @@
         fontSize: "12px",
         fontWeight: "500",
         transition: "background-color 0.15s ease",
-        borderRadius: "0 15px 15px 0",
       },
       {
         type: "button",
