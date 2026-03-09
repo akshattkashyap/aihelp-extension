@@ -17,9 +17,9 @@
       "run_at": "document_end"
     }
   ],
-  "options_ui": {
-    "page": "options.html",
-    "open_in_tab": true
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "AI Text Lookup"
   },
   "icons": {
     "16": "assets/images/icon16.png",

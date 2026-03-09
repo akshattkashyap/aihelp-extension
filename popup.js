@@ -1,9 +1,22 @@
-// Options page script - handles saving/loading API key
-
 document.addEventListener("DOMContentLoaded", () => {
   const apiKeyInput = document.getElementById("apiKey");
   const saveBtn = document.getElementById("saveBtn");
   const status = document.getElementById("status");
+  const togglePasswordBtn = document.getElementById("togglePasswordBtn");
+  const eyeIcon = document.getElementById("eyeIcon");
+  const eyeOffIcon = document.getElementById("eyeOffIcon");
+
+  togglePasswordBtn.addEventListener("click", () => {
+    if (apiKeyInput.type === "password") {
+      apiKeyInput.type = "text";
+      eyeIcon.style.display = "none";
+      eyeOffIcon.style.display = "block";
+    } else {
+      apiKeyInput.type = "password";
+      eyeIcon.style.display = "block";
+      eyeOffIcon.style.display = "none";
+    }
+  });
 
   // Load existing settings
   chrome.storage.sync.get(["groqApiKey"], (result) => {
@@ -37,11 +50,11 @@ document.addEventListener("DOMContentLoaded", () => {
       status.textContent = "✓ API key saved";
       status.className = "status success";
 
-      // Hide after 3 seconds
+      // Hide after 2 seconds
       setTimeout(() => {
         status.className = "status";
         status.textContent = "";
-      }, 3000);
+      }, 2000);
     });
   });
 });
