@@ -18,13 +18,11 @@ A Chrome extension that provides AI-powered explanations for any selected text o
 ### Method 1: Easy Install (Packed Extension)
 
 1. **Download the Extension**
-
    - Go to the [Releases page](https://github.com/akshattkashyap/aihelp-extension/releases).
    - Download the latest `aihelp-extension.crx` file to your computer.
    - **Important:** Right-click the asset link and choose "Save link as..." if clicking it directly doesn't work.
 
 2. **Open Extensions Page**
-
    - In Chrome, navigate to `chrome://extensions/`.
    - **Enable Developer Mode** by toggling the switch in the top-right corner.
 
@@ -58,13 +56,12 @@ A Chrome extension that provides AI-powered explanations for any selected text o
 This extension requires a Groq API key to function.
 
 1. **Get an API Key**
-
    - Visit https://console.groq.com/keys
    - Create an API key and copy it
 
 2. **Configure the Extension**
-   - Right-click the extension icon in Chrome's toolbar
-   - Select "Options" (or click the extension icon → ⚙️)
+   - Click the extension icon in Chrome's toolbar
+   - A popup will appear
    - Paste your API key in the input field
    - Click "Save API Key"
 
@@ -101,7 +98,7 @@ This extension requires a Groq API key to function.
 
 ### "API key not configured" Error
 
-1. Right-click the extension icon → Options
+1. Click the extension icon in Chrome's toolbar
 2. Enter your API key
 3. Click "Save API Key"
 
