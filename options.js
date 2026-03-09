@@ -6,9 +6,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const status = document.getElementById("status");
 
   // Load existing settings
-  chrome.storage.sync.get(["geminiApiKey"], (result) => {
-    if (result.geminiApiKey) {
-      apiKeyInput.value = result.geminiApiKey;
+  chrome.storage.sync.get(["groqApiKey"], (result) => {
+    if (result.groqApiKey) {
+      apiKeyInput.value = result.groqApiKey;
     }
   });
 
@@ -26,25 +26,22 @@ document.addEventListener("DOMContentLoaded", () => {
     status.textContent = "Saving...";
     status.className = "status";
 
-    chrome.storage.sync.set(
-      { geminiApiKey: apiKey },
-      () => {
-        if (chrome.runtime.lastError) {
-          status.textContent =
-            chrome.runtime.lastError.message || "Failed to save API key";
-          status.className = "status error";
-          return;
-        }
-
-        status.textContent = "✓ API key saved";
-        status.className = "status success";
-
-        // Hide after 3 seconds
-        setTimeout(() => {
-          status.className = "status";
-          status.textContent = "";
-        }, 3000);
+    chrome.storage.sync.set({ groqApiKey: apiKey }, () => {
+      if (chrome.runtime.lastError) {
+        status.textContent =
+          chrome.runtime.lastError.message || "Failed to save API key";
+        status.className = "status error";
+        return;
       }
-    );
+
+      status.textContent = "✓ API key saved";
+      status.className = "status success";
+
+      // Hide after 3 seconds
+      setTimeout(() => {
+        status.className = "status";
+        status.textContent = "";
+      }, 3000);
+    });
   });
 });

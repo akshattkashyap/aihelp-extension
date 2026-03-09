@@ -1,14 +1,17 @@
 // AI Text Lookup - Background Service Worker
 // Handles AI API calls and message passing
 
+const PRIMARY_MODEL = "openai/gpt-oss-120b";
+const FALLBACK_MODEL = "llama-3.1-8b-instant";
+
 /**
  * Gets API key from Chrome storage
  */
 async function getSettings() {
   return new Promise((resolve) => {
-    chrome.storage.sync.get(["geminiApiKey"], (result) => {
+    chrome.storage.sync.get(["groqApiKey"], (result) => {
       resolve({
-        apiKey: result.geminiApiKey || null,
+        apiKey: result.groqApiKey || null,
       });
     });
   });
@@ -20,7 +23,7 @@ async function getSettings() {
  * @param {string} apiKey - The API key
  * @returns {Promise<{success: boolean, response?: string, error?: string, statusCode?: number}>}
  */
-async function makeAPICall(text, apiKey) {
+async function makeAPICall(text, apiKey, model) {
   const endpoint = "https://api.groq.com/openai/v1/chat/completions";
 
   const prompt =
@@ -34,15 +37,15 @@ async function makeAPICall(text, apiKey) {
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: "llama-3.1-8b-instant",
+        model: model,
         messages: [
           {
             role: "system",
             content: prompt,
           },
-          { 
-            role: "user", 
-            content: text 
+          {
+            role: "user",
+            content: text,
           },
         ],
         temperature: 0.7,
@@ -101,17 +104,32 @@ async function getAIResponse(text) {
       };
     }
 
-    let result = await makeAPICall(text, apiKey);
+    // Try primary model first
+    let result = await makeAPICall(text, apiKey, PRIMARY_MODEL);
 
     if (result.success) {
       return {
         ...result,
-        modelUsed: "llama-3.1-8b-instant",
+        modelUsed: PRIMARY_MODEL,
       };
     }
 
-    // If all models failed or original error wasn't 429
-    console.error("Model failed", result);
+    // Fallback to secondary model
+    console.warn(
+      `Primary model (${PRIMARY_MODEL}) failed, falling back to ${FALLBACK_MODEL}:`,
+      result.error,
+    );
+    result = await makeAPICall(text, apiKey, FALLBACK_MODEL);
+
+    if (result.success) {
+      return {
+        ...result,
+        modelUsed: FALLBACK_MODEL,
+      };
+    }
+
+    // Both models failed
+    console.error("All models failed", result);
     return {
       success: false,
       error: result.error || "Failed to get AI response",
@@ -196,14 +214,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
  * @param {string} apiKey - The API key
  * @returns {Promise<{success: boolean, response?: string, error?: string, statusCode?: number}>}
  */
-async function makeCustomAPICall(text, question, apiKey) {
+async function makeCustomAPICall(text, question, apiKey, model) {
   const endpoint = "https://api.groq.com/openai/v1/chat/completions";
 
   const prompt =
     "You will receive a PASSAGE and a FOLLOWUP. The FOLLOWUP may be (a) a direct question about the passage or (b) extra context/instructions for how to explain it. Respond immediately with a helpful answer/explanation that uses the PASSAGE as the main context and respects the FOLLOWUP. If the passage is short, still answer as best you can. Plain text only. Never ask the user to provide the passage/followup and never say you're ready for input.";
 
   try {
-
     const response = await fetch(endpoint, {
       method: "POST",
       headers: {
@@ -211,14 +228,14 @@ async function makeCustomAPICall(text, question, apiKey) {
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: "llama-3.1-8b-instant",
+        model: model,
         messages: [
           {
             role: "system",
             content: prompt,
           },
-          { 
-            role: "user", 
+          {
+            role: "user",
             content: `PASSAGE:\n${text}\n\nFOLLOWUP (question or context):\n${question}`,
           },
         ],
@@ -279,17 +296,32 @@ async function getCustomAIResponse(text, question) {
       };
     }
 
-    let result = await makeCustomAPICall(text, question, apiKey);
+    // Try primary model first
+    let result = await makeCustomAPICall(text, question, apiKey, PRIMARY_MODEL);
 
     if (result.success) {
       return {
         ...result,
-        modelUsed: "llama-3.1-8b-instant",
+        modelUsed: PRIMARY_MODEL,
       };
     }
 
-    // If all models failed or original error wasn't 429
-    console.error("Model failed or non-429 error:", result);
+    // Fallback to secondary model
+    console.warn(
+      `Primary model (${PRIMARY_MODEL}) failed, falling back to ${FALLBACK_MODEL}:`,
+      result.error,
+    );
+    result = await makeCustomAPICall(text, question, apiKey, FALLBACK_MODEL);
+
+    if (result.success) {
+      return {
+        ...result,
+        modelUsed: FALLBACK_MODEL,
+      };
+    }
+
+    // Both models failed
+    console.error("All models failed:", result);
     return {
       success: false,
       error: result.error || "Failed to get AI response",
