@@ -334,3 +334,30 @@ async function getCustomAIResponse(text, question) {
     };
   }
 }
+
+// ============================================
+// CONTEXT MENU (PDF SUPPORT)
+// ============================================
+
+chrome.runtime.onInstalled.addListener(() => {
+  chrome.contextMenus.removeAll(() => {
+    chrome.contextMenus.create({
+      id: "ai-explain",
+      title: "Explain with AI",
+      contexts: ["selection"]
+    });
+  });
+});
+
+chrome.contextMenus.onClicked.addListener((info, tab) => {
+  if (info.menuItemId === "ai-explain" && info.selectionText) {
+    const text = encodeURIComponent(info.selectionText);
+    const resultUrl = chrome.runtime.getURL("result.html") + "?text=" + text;
+    chrome.windows.create({
+      url: resultUrl,
+      type: "popup",
+      width: 500,
+      height: 600
+    });
+  }
+});

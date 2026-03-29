@@ -3,7 +3,7 @@
   "name": "AI Text Lookup",
   "version": "1.0.1",
   "description": "Highlight text on any webpage to get AI-powered explanations",
-  "permissions": ["storage"],
+  "permissions": ["storage", "contextMenus"],
   "host_permissions": [
     "<all_urls>"
   ],
